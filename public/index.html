@@ -1,0 +1,79 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Movie Search</title>
+  <meta name="description" content="A searchable movie list">
+
+  <link rel="stylesheet" href="styles.css">
+
+</head>
+
+<body>
+    <h1 class = "centeredText">Movie Search</h1>
+    <input type="text" placeholder="Partial Title" class="w500px centered font20px" id="queryBox" onkeyup="updateResults()"></input>
+    <br>
+    <p class="centeredText noMarginTopBottom font20px">Search Results</p>
+    <div class="w500px centered" id="searchResults">
+        <p class="centeredText noMarginTopBottom font20px">.  .  .</p>
+    </div>
+
+    <script>
+        // div in which search results should be placed
+        var resultsDiv = document.getElementById("searchResults");
+        // flag recording if new matches should be fetched
+        var updateReady = true;
+        // timeout to fetch new matched
+        var updateTimeout;
+        
+        // update the search results based on the search query
+        function updateResults(){
+            // throttle the update process to avoid updating too frequently
+            if(updateReady){
+                updateReady=false;
+                getMatchingMovies(updateView);
+                // allow updates to be performed after 100 ms
+                setTimeout(function(){updateReady = true;}, 100)
+            }else{
+                // replace the pending update with a new one (based on updated query)
+                if(updateTimeout){
+                    clearTimeout(updateTimeout);
+                }
+                updateTimeout = setTimeout(updateResults, 100);
+            }
+        }
+
+        // get the movies whose titles match the query
+        function getMatchingMovies(callback){
+            var query = document.getElementById("queryBox").value;
+            var oReq = new XMLHttpRequest();
+            oReq.addEventListener("load", callback);
+            oReq.open("GET", "/movie?query="+query);
+            oReq.send();
+        }
+
+        // update the view to show the movies whose titles match the query
+        function updateView(moviesRequestEvent){
+            var movies = JSON.parse(moviesRequestEvent.srcElement.response);
+
+            var docFrag = new DocumentFragment;
+            var d = document.createElement('div');
+            
+            // add each movie title to the fragment
+            movies.forEach(function(element) {
+                var p = document.createElement("p");
+                p.className="font20px noMarginTopBottom";
+                p.innerHTML = element;
+                d.appendChild(p);
+            }, this);
+
+            docFrag.appendChild(d);
+            
+            // update the results 
+            resultsDiv.replaceChild(docFrag, resultsDiv.firstElementChild);
+        }
+    </script>
+</body>
+</html>

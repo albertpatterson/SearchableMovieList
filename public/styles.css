@@ -1,0 +1,28 @@
+.centered {
+    display: block;
+    margin: 0 auto;
+}
+
+.centeredText {
+    text-align: center;
+}
+
+.w500px {
+    width: 500px;
+}
+
+.font20px {
+    font-size: 20px;
+}
+.noMarginTopBottom {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+body {
+    background-color: #c3dbf5
+}
+
+#searchResults {
+    background:white
+}
