@@ -3,9 +3,9 @@ A very basic app providing a searchable movie list. This project is intended to 
 
 ## TODO
 ### View
-[o] single page with a title, heading, search bar, and results field
+[ ] single page with a title, heading, search bar, and results field
 ### API
-[o] matches (movies with names matching search query)
-  [o] get
+[ ] matches (movies with names matching search query)
+  [ ] get
 ### Database Layer
-[o] single table with the movie names, with the name also service as the primary key
+[ ] single table with the movie names, with the name also service as the primary key
