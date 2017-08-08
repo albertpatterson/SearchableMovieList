@@ -3,7 +3,7 @@ A very basic app providing a searchable movie list. This project is intended to 
 
 ## TODO
 ### View
-- [ ] single page with a title, heading, search bar, and results field
+- [x] single page with a title, heading, search bar, and results field
 ### API
 - [ ] matches (movies with names matching search query)
   - [ ] get
