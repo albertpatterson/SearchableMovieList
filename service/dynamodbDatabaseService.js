@@ -1,12 +1,14 @@
-const AWS = require('aws-sdk');
-
-AWS.config.update({
-  region: "us-west-2",
-  endpoint: "http://localhost:8000"
-});
+// instance of AWS configured with appropriate credentials
+const AWS = require('../private/AWSConfigService');
 
 var docClient = new AWS.DynamoDB.DocumentClient();
 
+/**
+ * get the movie titles that match a search query
+ * 
+ * @param {any} query 
+ * @returns 
+ */
 function getMatches(query){
     
     const queryStrings = query.replace(/[\s\W]{1,}/g," ").split(" ");
@@ -31,10 +33,19 @@ function getMatches(query){
         ExpressionAttributeValues: attrVals
     }
 
-    console.log(queryParams);
-
     return new Promise(function(res, rej){
-        docClient.scan(queryParams, (err, data)=>{ err? rej(err) : res(data); })
+        docClient.scan(queryParams, (err, data)=>{ 
+            if(err){
+                console.log('err ', err);
+                rej(err)
+            }else{
+                console.log('data ', data);
+                console.log('items ', data.Items);
+                let titles = data.Items.map(item=>item.title);
+                console.log('titles ', titles);
+                res(titles); 
+            }
+        })
     }.bind(this))
 }
 

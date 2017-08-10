@@ -8,7 +8,7 @@ var mockDatabaseService = require('../service/dynamodbDatabaseService');
 router.get('/', function(req, res, next) {
     let query = req.query.query;
     mockDatabaseService.getMatches(query)
-    .then((matches)=>res.send(matches.Items.map(o=>o.title)))
+    .then((matches)=>res.send(matches))
     .catch((err)=>res.status(500).send(err))
 });
 

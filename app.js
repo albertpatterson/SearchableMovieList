@@ -5,13 +5,8 @@ var favicon = require('serve-favicon');
 const movie = require('./routes/movie');
 const fs = require('fs');
 
-const AWS = require("aws-sdk");
-
-AWS.config.update({
-  region: "us-west-2",
-  endpoint: "http://localhost:8000"
-});
-
+// instance of AWS configured with appropriate credentials
+const AWS = require('./private/AWSConfigService');
 
 var app = express();
 
@@ -93,78 +88,102 @@ function onListening() {
 
 
 
-
-
-
-
+// server.listen(port);
 // initialize DB and start server
 const dynamodb = new AWS.DynamoDB();
 
-const dbparams = {
-    TableName : "MovieTitles",
-    KeySchema: [       
-        { AttributeName: "title", KeyType: "HASH"},  //Partition key
-    ],
-    AttributeDefinitions: [       
-        { AttributeName: "title", AttributeType: "S" }
-    ],
-    ProvisionedThroughput: {       
-        ReadCapacityUnits: 10, 
-        WriteCapacityUnits: 10
-    }
-};
-
-// dynamodb.
-
-// new Promise(function(res, rej){
-//   dynamodb.createTable(dbparams, function(err, data) {
-//       if (err) {
-//           console.error("Unable to create table. Error JSON:", JSON.stringify(err, null, 2));
-//           rej(err);
-//       } else {
-//           console.log("Created table. Table description JSON:", JSON.stringify(data, null, 2));
-//           res(data);
-//       }
-//   });
-// }.bind(this))
-// new Promise(res=>res())
-Promise.resolve()
-.then(function(data){
-  return new Promise((res, rej)=>{
-    fs.readFile("./data/movieTitles.json", (err, data)=>{
-      if(err){
-        rej(err);
-      }else{
-        res(JSON.parse(data));
-      }
-    })
+new Promise((res, rej)=>{
+  dynamodb.listTables({}, (err, data)=>{
+    err ? rej(err) : res(data);
   })
-}.bind(this))
-.then(function(titles){
-  const n = 100;
-  titles.splice(n,titles.length-n);
-  let docClient = new AWS.DynamoDB.DocumentClient();
-  let putProms = titles.map(function(title){
-      return new Promise((res, rej)=>{
-          let = putParams = {
-                  TableName: "MovieTitles",
-                  Item: {title}
-                };
-          docClient.put(putParams, (err, data)=>{
-            if(err){
-              rej(err);
-            }else{
-              console.log('added '+title);
-              res(data);
-            }
-          })
-      })
-    });
-    return Promise.all(putProms);
+}).then((tableData)=>{
+  console.log('tables are ', tableData.TableNames)
+  // if(tableData.TableNames.indexOf("MovieTitles")===-1){
+  //   return createMovieTitlesTable();
+  // }
+  return createMovieTitlesTable(tableData.TableNames.indexOf("MovieTitles")===-1)
 })
+// Promise.resolve()
 .then(function(){
   server.listen(port);
 })
 .catch(function(err){
   console.log(err);
 })
+
+
+
+/**
+ * Create the table containing some movie titles
+ * 
+ * @returns 
+ */
+function createMovieTitlesTable(doCreate){
+
+  let creationPromise;
+
+  if(doCreate){
+    const dbparams = {
+        TableName : "MovieTitles",
+        KeySchema: [       
+            { AttributeName: "title", KeyType: "HASH"},  //Partition key
+        ],
+        AttributeDefinitions: [       
+            { AttributeName: "title", AttributeType: "S" }
+        ],
+        ProvisionedThroughput: {       
+            ReadCapacityUnits: 10, 
+            WriteCapacityUnits: 10
+        }
+    };
+
+    creationPromise =  new Promise((res, rej)=>{
+      dynamodb.createTable(dbparams, (err, data)=>{
+        console.log('create table');
+        console.log('err ', err);
+        console.log('data ', data);
+        err ? rej(err) : res(data);
+      })
+    })
+  }else{
+    creationPromise=Promise.resolve()
+  }
+
+  creationPromise
+  .then((data)=>{
+    return new Promise((res, rej)=>{
+      fs.readFile("./data/movieTitles.json", (err, data)=>{
+        console.log('read data');
+        console.log('err ', err);
+        console.log('data ', data);
+        err ? rej(err) : res(JSON.parse(data));
+      })
+    })
+  })
+  .then((titles)=>{
+    console.log('add data');
+    console.log('titles ', titles);
+
+    const n = 2000;
+    titles.splice(n,titles.length-n);
+    let docClient = new AWS.DynamoDB.DocumentClient();
+    let putProms = titles.map(function(title){
+        return new Promise((res, rej)=>{
+            let = putParams = {
+                    TableName: "MovieTitles",
+                    Item: {title}
+                  };
+            docClient.put(putParams, (err, data)=>{
+              if(err){
+                console.log('err ', err)
+                rej(err);
+              }else{
+                console.log('added '+title);
+                res(data);
+              }
+            })
+        })
+      });
+      return Promise.all(putProms);
+    });
+}

@@ -33,7 +33,13 @@
             // throttle the update process to avoid updating too frequently
             if(updateReady){
                 updateReady=false;
-                getMatchingMovies(updateView);
+                var query = document.getElementById("queryBox").value;
+                if(query){
+                    getMatchingMovies(query, updateView);
+                }else{
+                    updateView();
+                }
+                
                 // allow updates to be performed after 100 ms
                 setTimeout(function(){updateReady = true;}, 100)
             }else{
@@ -46,17 +52,22 @@
         }
 
         // get the movies whose titles match the query
-        function getMatchingMovies(callback){
-            var query = document.getElementById("queryBox").value;
-            var oReq = new XMLHttpRequest();
-            oReq.addEventListener("load", callback);
-            oReq.open("GET", "/movie?query="+query);
-            oReq.send();
+        function getMatchingMovies(query, callback){
+                var oReq = new XMLHttpRequest();
+                oReq.addEventListener("load", callback);
+                oReq.open("GET", "/movie?query="+query);
+                oReq.send();
         }
 
         // update the view to show the movies whose titles match the query
         function updateView(moviesRequestEvent){
-            var movies = JSON.parse(moviesRequestEvent.srcElement.response);
+            var movies;
+
+            if(moviesRequestEvent){
+                movies = JSON.parse(moviesRequestEvent.srcElement.response);
+            }else{
+                movies = [];
+            }
 
             var docFrag = new DocumentFragment;
             var d = document.createElement('div');
