@@ -9,12 +9,18 @@ A very basic app, used to test new technologies. It provides a searchable movie 
   - [x] get
 ### Database
 - [x] single table with the movie names, with the name also service as the primary key
-    -[x] version implemented in DynamoDB
-    -[x] mock version implemented in JS
+    - [x] version implemented in DynamoDB
+    - [x] mock version implemented in JS
     
-## Installation
-1. Clone this repositor.
+## Installation and Deployment
+1. Clone this repository.
 2. Create a service(/private/AWDConfigService) that provides an instance of aws-sdk with the appropriate config
+3. Create a DynamoDB table named MovieTitles
+3. Deploy the app via Elastic Beanstalk on AWS
+
+## Features
+Search for a movie by title. 
+*Screenshot Placeholder*
 
     
 
